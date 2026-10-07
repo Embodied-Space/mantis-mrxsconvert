@@ -4,7 +4,7 @@ import javafx.scene.control.MenuItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import qupath.ext.mantis.mrxsconvert.temp.TempWorkspace;
-import qupath.fx.dialogs.Dialogs;
+import qupath.ext.mantis.mrxsconvert.ui.ConverterWindow;
 import qupath.lib.common.Version;
 import qupath.lib.gui.QuPathGUI;
 import qupath.lib.gui.extensions.QuPathExtension;
@@ -34,9 +34,10 @@ public class SlideConvertExtension implements QuPathExtension {
 		isInstalled = true;
 		// Removes temp workspaces left by crashed or killed QuPath instances (spec 05, C2)
 		Thread.ofPlatform().daemon().name("mrxsconvert-temp-cleanup").start(TempWorkspace::cleanupOrphans);
+		var window = new ConverterWindow(qupath);
+		window.installQuitGuard();
 		MenuItem menuItem = new MenuItem(resources.getString("menu.convert"));
-		// Placeholder until the dialog (spec 08) exists
-		menuItem.setOnAction(e -> Dialogs.showInfoNotification(getName(), resources.getString("menu.not-implemented")));
+		menuItem.setOnAction(e -> window.show());
 		qupath.getMenu("Extensions", false).getItems().add(menuItem);
 	}
 

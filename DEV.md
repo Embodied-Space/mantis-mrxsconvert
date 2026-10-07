@@ -11,12 +11,12 @@ converts files: it doesn't import them into QuPath projects, carry over annotati
 
 ## Status
 
-Spike 01 is done (`specs/01-findings.md`). The extension registers itself and adds a placeholder menu item.
+Spike 01 is done (`specs/01-findings.md`). The extension adds *Extensions › Convert MRXS to OME-TIFF…*.
 Spec 02 (tool payload) is done: the build bundles the JRE and both tools, and `ToolPayload.ensureExtracted()` unpacks
 them. Spec 03 (conversion runner) is done: `ConversionRunner.convert(...)` converts one slide, with temp workspaces
 from spec 05 (`TempWorkspace`, orphan cleanup at startup). Spec 04 (`InputPlanner.plan(...)`), spec 06
-(`ConversionSettings`, `SettingsStore`, `MachineLimits`) and spec 07 (`BatchQueue.start(...)`) are done, so
-everything below the UI works. Next is spec 08 (UI).
+(`ConversionSettings`, `SettingsStore`, `MachineLimits`) and spec 07 (`BatchQueue.start(...)`) are done. Spec 08
+(UI) is implemented; its manual acceptance script in QuPath is still to be run. Next is spec 09 (acceptance harness).
 
 ## Building
 
@@ -98,6 +98,13 @@ QuPath (JavaFX)            ── never loads the tool jars ──
   gives per-job `JobState`, `cancel()` and a `BatchReport` future. A `BatchListener` hears about changes on batch
   threads, so the UI must hop to the FX thread. Settings persist through `SettingsStore` (QuPath preferences,
   `mantisSlideconvert.*`).
+- **UI.** `ConverterWindow` is one non-modal window owned by QuPath's main window. It shows `SetupView` (added
+  files/folders, the planned jobs, output choice, `AdvancedSettingsPane`, Start) or the `BatchView` of the current batch
+  (progress, then summary with *Show log*). `SetupView` re-plans on a background thread after every change and ignores
+  stale results. `BatchView` coalesces listener calls into one `Platform.runLater` refresh. Closing the window never
+  cancels. An event filter on QuPath's main window catches quit (window close and *File › Quit*) during a batch: it
+  asks, cancels, and quits again once the batch has stopped. All text is in `strings.properties` (`ui.*`), formatted by
+  `UiText`, which is unit-tested; JavaFX isn't on the test compile classpath.
 - **Payload.** The JRE and tool jars are plain resources under `qupath/ext/mantis/mrxsconvert/payload/` in the
   `-all` jar, with a `manifest.json` (paths + SHA-256s). They are added by a plain `Jar` task, never by Shadow:
   Shadow unpacks every `.jar` it is given and would put the tools' classes on QuPath's classpath.

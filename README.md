@@ -38,7 +38,7 @@ When the conversion finishes, a summary shows which slides converted, which were
 
 ## Uninstall
 
-Delete the extension `.jar` from QuPath's extensions folder, then delete `%LOCALAPPDATA%\mantis-mrxsconvert`.
+Delete the extension `.jar` from QuPath's extensions folder (default `%USERPROFILE%\QuPath\v0.7\extensions\`), then delete `%LOCALAPPDATA%\mantis-mrxsconvert`.
 
 ---
 

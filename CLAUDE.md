@@ -25,8 +25,9 @@ Gradle versions (10). The dev JDK is Oracle 25.0.4.1 at `C:\Program Files\Java\j
 so set it for `gradlew`. `SlideConvertExtension` adds a placeholder menu item. Spec 02 (payload) is done: the build downloads
 pinned tools + Temurin JRE 25.0.4.1+1 and builds the `-all` jar (266 MB); `payload.ToolPayload.ensureExtracted()` unpacks it.
 Specs 03 (runner), 04 (planning), 05 (temp), 06 (settings + persistence) and 07 (batch queue) are done.
-`gradlew build` passes; `ConversionRunnerIntegrationTest` and `BatchQueueIntegrationTest` run real conversions from
-`reference/` (~2 min). Next up: spec 08 (UI), then 09 and 10.
+Spec 08 (UI, `ui/`) is implemented; its manual acceptance script in QuPath is pending. `gradlew build` passes;
+`ConversionRunnerIntegrationTest` and `BatchQueueIntegrationTest` run real conversions from `reference/` (~2 min).
+JavaFX is not on the test compile classpath, so UI logic that needs tests goes in `ui/UiText`. Next up: 09, then 10.
 
 ## Common mistakes to avoid
 - **Never run the tools in QuPath's JVM or put their jars on its classpath.** Bio-Formats 8.5 conflicts with
