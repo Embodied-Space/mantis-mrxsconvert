@@ -45,15 +45,17 @@ QuPath (JavaFX)            ── never loads the tool jars ──
        ├─ 08 UI ─► 07 Batch queue ─► 03 Runner ─┬─► child JVM: bioformats2raw  (.mrxs → Zarr in %TEMP%)
        │            ▲   ▲   ▲                    └─► child JVM: raw2ometiff     (Zarr → .ome.tiff.partial → rename)
        │      04 Planning  05 Temp  06 Settings
-       └─ 02 Payload: tool jars nested in the extension jar → extracted to %LOCALAPPDATA%\mantis-slideconvert\tools\<hash>\
+       └─ 02 Payload: JRE + tool jars nested in the extension jar → extracted to %LOCALAPPDATA%\mantis-slideconvert\tools\<hash>\
 ```
 
 - **Child processes, not in-process.** QuPath ships its own Bio-Formats. Loading 8.5.0 next to it causes
-  classpath conflicts, and those conflicts are the source of the bug. The child JVMs use QuPath's bundled `java.exe`.
-- **Two separate classpaths.** About 135 jars are byte-identical between the tools and go in `common/`. But
+  classpath conflicts, and those conflicts are the source of the bug. The child JVMs run on a **JRE bundled in our
+  payload**, because QuPath 0.7.0's runtime is jlink'd without `java.exe` (spike 01).
+- **Two separate classpaths.** 134 jars are byte-identical between the tools and go in `common/`. But
   raw2ometiff pins older `bioformats2raw-0.12.0`, `zarr-java-0.1.0`, `blosc-java-0.1-1.21.4` and
   `picocli-4.7.5`, so each tool also gets its own folder (`b2r/`, `r2o/`).
 - **JVM flags.** bioformats2raw needs `--add-opens java.base/java.lang=ALL-UNNAMED`; raw2ometiff needs nothing extra.
+  On Java 25 both print native-access warnings; `--enable-native-access=ALL-UNNAMED` silences them.
 - **Main classes.** `com.glencoesoftware.bioformats2raw.Converter` and
   `com.glencoesoftware.pyramid.PyramidFromDirectoryWriter`.
 - **Native code.** The `blosc-java` jars include `libbloscjni.dll`, so nothing extra is needed on Windows.
@@ -65,8 +67,9 @@ bioformats2raw.bat "slide.mrxs" "%TEMP%\work\pyramid"
 raw2ometiff.bat    "%TEMP%\work\pyramid" "slide.ome.tiff"
 ```
 
-The launchers are in `reference\<tool>\<tool>\bin\`. Set `JAVA_HOME` to QuPath's bundled runtime to
-reproduce what the extension does. Spike 01 confirms where that runtime lives.
+The launchers are in `reference\<tool>\<tool>\bin\`. They need a `java.exe` (via `JAVA_HOME` or `PATH`).
+QuPath's runtime has none, so use any Java 11+; the extension uses its bundled JRE. Measurements and details are in
+`specs/01-findings.md`.
 
 ## Test data (`reference/`, never committed)
 

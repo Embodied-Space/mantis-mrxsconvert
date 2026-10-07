@@ -1,12 +1,12 @@
 # mantis_slideconvert
 
 QuPath extension (Windows, GPL-3.0) that converts fluorescence `.mrxs` slides to `.ome.tiff` by running
-bioformats2raw 0.12.1 → raw2ometiff 0.10.1 as child JVMs on QuPath's bundled Java. QuPath reads `.mrxs`
+bioformats2raw 0.12.1 → raw2ometiff 0.10.1 as child JVMs on a JRE bundled in the extension (QuPath 0.7 has no `java.exe`). QuPath reads `.mrxs`
 fluorescence channels incorrectly; the CLI output reads correctly. Users are non-technical: GUI only.
 
 ## Folder structure
 - `README.md` — end-user intro (keep brief, no dev detail). `DEV.md` — human developer reference; keep in sync.
-- `specs/` — source of truth. `00-goal-and-decisions.md` holds the confirmed decision ledger (IDs A1–E4);
+- `specs/` — source of truth. `00-goal-and-decisions.md` holds the confirmed decision ledger (IDs A1–E6);
   `01`–`10` are small specs, one component each, with acceptance criteria.
 - `reference/` — local-only test material, ~2.2 GB, **never commit** (E2):
   - `bioformats2raw-0.12.1/`, `raw2ometiff-0.10.1/` — unpacked CLI distributions (`bin/`, `lib/`).
@@ -17,15 +17,18 @@ fluorescence channels incorrectly; the CLI output reads correctly. Users are non
     (PROX1), plus the intermediate Zarr dirs `4colortest/`, `2colortest/` (useful for testing step 2 alone).
 
 ## Current status
-Nothing is built yet. Next up is **spec 01, the spike (a gate)**: confirm QuPath 0.7's Java and extension API, check
-whether nested jars get loaded, launch the tools via QuPath's `java.exe`, measure heap, read the defaults from `--help`.
-Write the answers to `specs/01-findings.md`. Don't start specs 02–10 until 01 is done and any spec it invalidates is revised.
+Spike 01 is done (`specs/01-findings.md`: go on QuPath 0.7). Specs 00, 02, 03, 06, 07, 09 and 10 have been revised
+to match. Nothing is built yet. Versions are pinned: Temurin JRE 25 in the payload (02), and the QuPath template, plugin and
+Gradle versions (10). The dev JDK is Oracle 25.0.4.1 at `C:\Program Files\Java\jdk-25.0.4.1`; `JAVA_HOME` is not set,
+so set it for `gradlew`. Next up: scaffold the Gradle project, then build in the order given in spec 00.
 
 ## Common mistakes to avoid
 - **Never run the tools in QuPath's JVM or put their jars on its classpath.** Bio-Formats 8.5 conflicts with
   QuPath's copy, and that conflict is what causes the bug (A4).
 - **Don't merge the two tools' classpaths.** raw2ometiff pins older bioformats2raw/zarr-java/blosc-java/picocli
-  jars. Share only the 135 byte-identical jars (spec 02).
+  jars. Share only the 134 byte-identical jars (spec 02).
+- `reference/outputs` came from older tool versions (Bio-Formats 7.3.0): compare pixels + channel metadata, never bytes (09).
+- The child env must not inherit `JAVA_TOOL_OPTIONS`/`_JAVA_OPTIONS`/`JDK_JAVA_OPTIONS` (spec 03).
 - bioformats2raw needs `--add-opens java.base/java.lang=ALL-UNNAMED`; raw2ometiff doesn't.
 - `.mrxs` is not a single file: it needs its sibling data folder (`Slidedat.ini`, `Data*.dat`). Never move one without the other.
 - Ignore macOS junk everywhere (E5): `._*` AppleDouble files (e.g. `._PROX1….mrxs` is NOT a slide), `.DS_Store`, `__MACOSX/`.

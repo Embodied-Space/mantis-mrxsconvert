@@ -1,5 +1,6 @@
 # Local test material: CLI tools, sample scans, reference outputs (~2.2 GB). Build downloads tools (spec 10, E2).
 /reference/
+*.log
 
 # Gradle / Java build output
 .gradle/

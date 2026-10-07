@@ -19,9 +19,14 @@ ConversionResult convert(ConversionJob job, ConversionSettings s, ToolPaths tool
 
 1. Create temp working dir via 05 (`TempWorkspace`) under system temp.
 2. Step 1 — child JVM:
-   `<qupath java.exe> -Xmx<heap> --add-opens java.base/java.lang=ALL-UNNAMED -Djava.io.tmpdir=<workspace> -Dlogback.configurationFile=<b2r config> -cp <classpathB2R> com.glencoesoftware.bioformats2raw.Converter <input.mrxs> <workspace>\pyramid [settings args]`
+   `<ToolPaths.javaExe> [-Xmx<heap>] --add-opens java.base/java.lang=ALL-UNNAMED --enable-native-access=ALL-UNNAMED -Djava.io.tmpdir=<workspace> -Dlogback.configurationFile=<b2r config> -cp <classpathB2R> com.glencoesoftware.bioformats2raw.Converter <input.mrxs> <workspace>\pyramid [settings args]`
 3. Step 2 — child JVM:
-   `<java.exe> -Xmx<heap> -Djava.io.tmpdir=<workspace> ... -cp <classpathR2O> com.glencoesoftware.pyramid.PyramidFromDirectoryWriter <workspace>\pyramid <output>.ome.tiff.partial [settings args]`
+   `<ToolPaths.javaExe> [-Xmx<heap>] --enable-native-access=ALL-UNNAMED -Djava.io.tmpdir=<workspace> ... -cp <classpathR2O> com.glencoesoftware.pyramid.PyramidFromDirectoryWriter <workspace>\pyramid <output>.ome.tiff.partial [settings args]`
+   - `java.exe` is the payload's bundled JRE (02, A4 revised), never QuPath's runtime (it has none) or one on `PATH`.
+   - `-Xmx` only when heapPerFile ≠ default (E3: JVM default). `--enable-native-access` only silences Java 25 warnings;
+     it's a JVM flag, not a tool arg, so D1 holds.
+   - Child environment: **remove** `JAVA_TOOL_OPTIONS`, `_JAVA_OPTIONS`, `JDK_JAVA_OPTIONS`, `JAVA_HOME`, `CLASSPATH`
+     so a user's machine settings can't leak in (spike 01: `JAVA_TOOL_OPTIONS` is honoured).
 4. On success: atomic rename `.partial` → `.ome.tiff`. If rename target appeared meanwhile, fail (don't overwrite — B4).
 5. **Always** (finally): delete workspace; delete `.partial` if present.
 6. stdout + stderr of both steps appended to the job's log file, with command lines and exit codes.
@@ -44,5 +49,7 @@ Choosing output path, skip-if-exists, disk-space check, concurrency (all 04/07).
 
 - Sample fluorescence `.mrxs` → output passes 09 comparison.
 - Non-zero exit in step 1 → `FAILED`, no `.partial`, no workspace left, log contains stderr.
+  (Spike 01: too little heap can crash the JVM natively — `EXCEPTION_ACCESS_VIOLATION`, `hs_err_pid*.log` — instead of an OOM;
+  any non-zero exit is a failure. Keep `hs_err` files out of the output folder: the child's working dir is the workspace.)
 - Cancel mid-step-1 and mid-step-2 → no java child processes remain, no files left behind.
 - Killing QuPath mid-run leaves a workspace that 05's startup cleanup removes.

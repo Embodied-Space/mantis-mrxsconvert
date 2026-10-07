@@ -19,7 +19,11 @@ For each sample, extension output vs known-good:
 2. Full-resolution pixels identical for every channel (tile-wise compare; stream, don't load whole planes).
    Lower pyramid levels: identical too (same tool, same defaults) — if not, report but treat as a finding to discuss.
 3. OME-XML: same channel count, names, emission/excitation, colors; same physical pixel sizes.
-4. Ignored: UUIDs, timestamps, file sizes/bytes.
+4. Ignored: UUIDs, timestamps, file sizes/bytes, TIFF `Software`, `NewSubfileType`/`SubfileType` tags.
+
+**Known:** the user's known-good files in `reference/outputs` were made with older tool versions (`OME Bio-Formats 7.3.0`),
+so byte equality is impossible. Spike 01 found every tile (all pyramid levels) and all channel metadata identical, so
+criteria 1–3 are expected to pass as written.
 
 Read with Bio-Formats 8.5.0 (the payload's `common/` jars) in the test JVM.
 

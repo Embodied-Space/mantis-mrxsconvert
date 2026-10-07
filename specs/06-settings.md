@@ -11,12 +11,12 @@ One immutable settings model, its CLI mapping, and persistence. No UI.
 | Field | Default | Maps to | Notes |
 |-------|---------|---------|-------|
 | parallelFiles | 1 | (07 concurrency) | min 1, max = cores |
-| heapPerFile | **Decided in 01 (E3)** from measured peak memory on user samples | `-Xmx` on both child JVMs | Not a CLI default; validate vs physical RAM |
-| compression | CLI default (LZW) | raw2ometiff `--compression` | enum: LZW, JPEG, JPEG-2000, JPEG-2000 Lossy, zlib, Uncompressed |
-| compressionQuality | CLI default | raw2ometiff `--quality` | only for JPEG / JPEG-2000 Lossy |
-| tileWidth / tileHeight | CLI default (read from `--help` in 01) | bioformats2raw `--tile-width/--tile-height` | |
+| heapPerFile | **Auto** = JVM default, no `-Xmx` (E3) | `-Xmx` on both child JVMs | When set: min 256 MB (spike 01 floor is 128 MB; below it the JVM can crash natively), max = physical RAM |
+| compression | CLI default (LZW) | raw2ometiff `--compression` | enum (E6): LZW, JPEG, Uncompressed → `LZW`, `JPEG`, `UNCOMPRESSED` |
+| compressionQuality | CLI default (none printed by `--help`) | raw2ometiff `--quality` | only for JPEG |
+| tileWidth / tileHeight | 1024 / 1024 (spike 01) | bioformats2raw `--tile-width/--tile-height` | |
 | resolutions | auto (CLI default) | bioformats2raw `--resolutions` | auto = omit arg |
-| maxWorkers | CLI default | `--max_workers` on both tools | |
+| maxWorkers | 4 (both tools, spike 01) | `--max_workers` on both tools (b2r also accepts `--max-workers`) | |
 | lastOutputFolder | empty (= next to source) | — | |
 
 **Rule (D1):** an arg is emitted only when the value differs from the CLI default. Default settings ⇒ identical command lines to the manual process ⇒ C3 holds.

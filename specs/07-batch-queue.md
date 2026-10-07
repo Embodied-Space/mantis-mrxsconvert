@@ -34,12 +34,23 @@ BatchHandle start(Plan plan, ConversionSettings s);
 
      Calibrated on `reference/` with default settings (LZW): PROX1 110 MB → Zarr 650 MB + TIFF 487 MB (10.3×);
      APOL1 69 MB → Zarr 302 MB + TIFF 201 MB (7.3×). Margin also covers NTFS cluster overhead of ~8k Zarr chunk files.
-     Non-default compression (esp. Uncompressed) uses factors measured in spike 01 Q10.
+     Non-default compression (spike 01 Q10, ratios TIFF/input):
+
+     | Compression | Measured (PROX1 / APOL1) | Rule |
+     |-------------|--------------------------|------|
+     | LZW | 4.41× / 2.93× | `OUTPUT_FACTOR` 5.5 (above) |
+     | JPEG | 1.47× / 0.56× | `OUTPUT_FACTOR_JPEG` 2.0 |
+     | Uncompressed | 76.1× / 19.8× | **not a factor** — sparse slides make any factor wrong. Pre-flight uses 80× as a cheap first gate, then **after step 1** compute the exact need from the Zarr `.zarray` shapes (Σ levels W·H·C·bytes per series, incl. label/macro) and re-check the output volume before step 2; insufficient → `FAILED` as above. |
+
+     Temp (Zarr) factor is unaffected by output compression. bioformats2raw 0.12.1 Zarr measured 623 MB / 300 MB
+     (slightly below the reference dirs, which also hold empty chunks).
 4. **Re-check skip** right before starting (output may have appeared since planning).
 5. Failure of one job never affects others (B4).
 6. **Cancel (D4):** stop dequeuing; cancel running jobs via token; remaining → `CANCELLED`; completed outputs kept.
 7. **Report:** counts + per-job outcome, reason, log path, duration.
 8. Heap guard: if `parallelFiles × heapPerFile` > ~75% physical RAM, warn (in report/UI), don't block.
+   With heapPerFile = Auto (E3) count each JVM as 25 % of RAM (the JVM default max), so the warning starts at parallelFiles = 4.
+   (Spike 01: real use is far lower — ~0.5–1.5 GB working set per JVM on the samples — so this is a ceiling, not a forecast.)
 
 ## Out of scope
 

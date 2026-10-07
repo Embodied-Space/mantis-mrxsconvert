@@ -4,12 +4,20 @@
 
 ## Scope
 
-- Gradle build using the QuPath extension template/plugin version matching 01's findings.
+- Gradle build based on `qupath/qupath-extension-template` at commit `bd825fc1b6d8ff25660e2fe853e97830b298986a`
+  (2026-04-23; the repo has no tags). Pinned versions, verified on 2026-10-07 by building the template with JDK 25.0.4.1:
+  - `settings.gradle.kts`: `qupath { version = "0.7.0" }`, plugin `io.github.qupath.qupath-extension-settings` **0.2.1**
+    (repos: Gradle Plugin Portal + `https://maven.scijava.org/content/repositories/releases`).
+  - `build.gradle.kts`: `id("qupath-conventions")`, `com.gradleup.shadow` 8.3.5, `qupathExtension { … }` block.
+    Drop the template's `groovy` plugin and Groovy deps (we write Java).
+  - Gradle wrapper **9.4.0**. The template's wrapper has no `distributionSha256Sum`. Add it (E2: pinned + verified downloads).
+  - JDK **25** (QuPath 0.7 jars are class version 69).
+- Build also fetches the pinned JRE (02) by URL + SHA-256, like the tools.
 - Build pipeline: assemble payload (02) from pinned tool versions → extension jar.
   Tool distributions are fetched by the build from their pinned GitHub release URLs + checksums,
   **not** committed (`reference/` is local-only and git-ignored).
 - GitHub Actions on Windows: build, unit tests (04–07), produce jar; on tag → GitHub Release with the jar.
-- License: GPL-3.0 `LICENSE`; payload `LICENSES/` includes bioformats2raw / raw2ometiff licenses + third-party notices;
+- License: GPL-3.0 `LICENSE`; payload `LICENSES/` includes bioformats2raw / raw2ometiff licenses, the JRE's (GPLv2 + CE) + third-party notices;
   release notes link to the tools' source.
 - User README: install (drag jar onto QuPath), supported QuPath version, Windows-only, what it does/doesn't do,
   where logs and cache live, how to uninstall (delete jar + `%LOCALAPPDATA%\mantis-slideconvert`).
