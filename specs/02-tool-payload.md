@@ -83,4 +83,7 @@ Status 2026-10-07: all met by `gradlew build` (tests in `src/test/java/…/paylo
 - `<javaExe> -cp <classpathB2R> com.glencoesoftware.bioformats2raw.Converter --version` prints its version; same for R2O. ✅
 - `<javaExe> -version` reports the pinned JRE version; no `java` on `PATH` and no `JAVA_HOME` are required. ✅
 - No tool class is loadable from the extension jar itself (A4). ✅
-- Not yet checked: QuPath 0.7 installs and loads the 266 MB jar (manual; first done when spec 08 has a menu action that uses it).
+- QuPath 0.7 installs and loads the 266 MB jar. ✅ (user, 2026-10-07: drag-and-drop install, menu item, Manage
+  extensions entry, clean log).
+- Not yet checked: extraction from inside QuPath (its class loader, `%LOCALAPPDATA%`). First exercised when spec 03/08
+  call `ensureExtracted()`.
