@@ -8,6 +8,7 @@ fluorescence channels incorrectly; the CLI output reads correctly. Users are non
 - `build.gradle.kts`, `settings.gradle.kts`, `gradle/`, `gradlew*` — Gradle build (spec 10 pins).
 - `src/main/java/qupath/ext/mantis/mrxsconvert/` — extension code; strings in `src/main/resources/…/strings.properties`.
 - `README.md` — end-user intro (keep brief, no dev detail). `DEV.md` — human developer reference; keep in sync.
+- `.github/` — CI workflow (actions pinned by SHA) + `release-notes.md` (update tool versions when spec 02 changes).
 - `specs/` — source of truth. `00-goal-and-decisions.md` holds the confirmed decision ledger (IDs A1–E6);
   `01`–`10` are small specs, one component each, with acceptance criteria.
 - `reference/` — local-only test material, ~2.2 GB, **never commit** (E2):
@@ -27,7 +28,9 @@ pinned tools + Temurin JRE 25.0.4.1+1 and builds the `-all` jar (266 MB); `paylo
 Specs 03 (runner), 04 (planning), 05 (temp), 06 (settings + persistence) and 07 (batch queue) are done.
 Spec 08 (UI, `ui/`) is implemented; its manual acceptance script in QuPath is pending. `gradlew build` passes;
 `ConversionRunnerIntegrationTest` and `BatchQueueIntegrationTest` run real conversions from `reference/` (~2 min).
-JavaFX is not on the test compile classpath, so UI logic that needs tests goes in `ui/UiText`. Next up: 09, then 10.
+JavaFX is not on the test compile classpath, so UI logic that needs tests goes in `ui/UiText`. Spec 10 (release) is
+implemented: `.github/workflows/build.yml` (Windows CI; tag `v*` → GitHub Release), `LICENSE`, user README. Its CI run,
+first release and fresh-install check are pending. Next up: 09.
 
 ## Common mistakes to avoid
 - **Never run the tools in QuPath's JVM or put their jars on its classpath.** Bio-Formats 8.5 conflicts with

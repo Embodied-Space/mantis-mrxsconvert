@@ -16,7 +16,8 @@ Spec 02 (tool payload) is done: the build bundles the JRE and both tools, and `T
 them. Spec 03 (conversion runner) is done: `ConversionRunner.convert(...)` converts one slide, with temp workspaces
 from spec 05 (`TempWorkspace`, orphan cleanup at startup). Spec 04 (`InputPlanner.plan(...)`), spec 06
 (`ConversionSettings`, `SettingsStore`, `MachineLimits`) and spec 07 (`BatchQueue.start(...)`) are done. Spec 08
-(UI) is implemented; its manual acceptance script in QuPath is still to be run. Next is spec 09 (acceptance harness).
+(UI) is implemented; its manual acceptance script in QuPath is still to be run. Spec 10 (release) is implemented;
+its first CI run, tagged release and fresh-install check are pending. Spec 09 (acceptance harness) is next.
 
 ## Building
 
@@ -29,6 +30,20 @@ gradlew build
 
 The installable jar is `build\libs\mantis-mrxsconvert-<version>-all.jar` (~266 MB); `gradlew build` produces it (QuPath's own libraries are not bundled).
 The Gradle wrapper download is pinned by SHA-256 in `gradle/wrapper/gradle-wrapper.properties`.
+
+The version is `0.1.0-SNAPSHOT` unless you pass `-PreleaseVersion=<version>`.
+
+## CI and releases
+
+`.github/workflows/build.yml` runs `gradlew.bat build` on `windows-latest` for every push to `main` and every PR,
+and uploads the `-all` jar as a workflow artifact (kept 14 days). There is no `reference/` on CI, so the conversion
+tests are skipped; `ToolPayloadIntegrationTest` still runs the bundled JRE and both tools. The pinned downloads are
+cached by the workflow (key: hash of `build.gradle.kts`) and their SHA-256s are checked on every build.
+
+To release, push a tag `v<version>` (for example `git tag v0.1.0 && git push origin v0.1.0`). The build uses
+`<version>` as the jar version, and the `release` job creates a GitHub Release with the jar and
+`.github/release-notes.md` as its text. A tag containing `-` (`v0.2.0-rc1`) becomes a pre-release. Before a release,
+check the versions in the release notes against spec 02. Actions are pinned by commit SHA, with the tag in a comment.
 
 The first build downloads the pinned tools and JRE (~470 MB, SHA-256-checked) into `.gradle\payload-downloads\`,
 which survives `gradlew clean`. Pins (URL + SHA-256) are in `build.gradle.kts` and listed in spec 02. Build chain:
@@ -43,9 +58,11 @@ folder can block the final rename of a fresh extraction).
 
 ```
 README.md      end-user intro
+LICENSE        GPL-3.0 (also bundled in the jar as licenses/LICENSE)
 DEV.md         this file
 CLAUDE.md      instructions for Claude Code (short version of this file)
 build.gradle.kts, settings.gradle.kts, gradle/, gradlew*   Gradle build (versions pinned in spec 10)
+.github/       CI workflow + release notes (spec 10)
 src/main/java/qupath/ext/mantis/mrxsconvert/              extension code
 specs/         design: 00 = goal + decision ledger, 01–10 = one component each
 reference/     local-only, git-ignored (~2.2 GB) — see "Test data"

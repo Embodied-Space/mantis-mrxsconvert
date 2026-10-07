@@ -2,6 +2,9 @@
 
 **Depends on:** all. **Decisions:** A3, A5.
 
+**Status:** Implemented (2026-10-07). A clean clone builds and passes tests with `gradlew.bat build` (the
+`reference/` tests skip). Still to confirm: the first CI run on GitHub, a tagged release, and a fresh QuPath install.
+
 ## Scope
 
 - Gradle build based on `qupath/qupath-extension-template` at commit `bd825fc1b6d8ff25660e2fe853e97830b298986a`
@@ -18,8 +21,12 @@
   Tool distributions are fetched by the build from their pinned GitHub release URLs + checksums,
   **not** committed (`reference/` is local-only and git-ignored).
 - GitHub Actions on Windows: build, unit tests (04–07), produce jar; on tag → GitHub Release with the jar.
+  *(Done: `.github/workflows/build.yml`. Actions are pinned by commit SHA. The `payload-downloads` cache is keyed on
+  `build.gradle.kts`. A tag `v<version>` builds with `-PreleaseVersion=<version>` (otherwise `0.1.0-SNAPSHOT`); the
+  `release` job runs `gh release create` with `.github/release-notes.md`. A tag with `-` is a pre-release.)*
 - License: GPL-3.0 `LICENSE`; payload `LICENSES/` includes bioformats2raw / raw2ometiff licenses, the JRE's (GPLv2 + CE) + third-party notices;
-  release notes link to the tools' source.
+  release notes link to the tools' source. *(Done: root `LICENSE`, which the QuPath conventions plugin copies to
+  `licenses/LICENSE` in the jar. The payload's `LICENSES/NOTICE.txt` points to `jre/legal/`.)*
 - User README: install (drag jar onto QuPath), supported QuPath version, Windows-only, what it does/doesn't do,
   where logs and cache live, how to uninstall (delete jar + `%LOCALAPPDATA%\mantis-mrxsconvert`).
 

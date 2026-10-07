@@ -1,0 +1,85 @@
+# Spec 10: build + tests on Windows for every push/PR; a pushed tag v<version> also publishes a GitHub Release.
+# Actions are pinned by commit SHA (E2: pinned + verified downloads); the comment names the tag.
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      # Also validates gradle-wrapper.jar against Gradle's published checksums
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+
+      # Pinned tool + JRE zips (~470 MB); the build re-checks their SHA-256s either way
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .gradle/payload-downloads
+          key: payload-downloads-${{ hashFiles('build.gradle.kts') }}
+
+      - name: Build and test
+        shell: pwsh
+        run: |
+          $gradleArgs = @('build')
+          if ($env:GITHUB_REF -like 'refs/tags/v*') {
+            $gradleArgs += "-PreleaseVersion=$($env:GITHUB_REF_NAME.Substring(1))"
+          }
+          .\gradlew.bat @gradleArgs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-reports
+          path: build/reports/tests/
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: extension-jar
+          path: build/libs/*-all.jar
+          # The jar is already compressed; release builds keep theirs on the Release page
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: .github
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: extension-jar
+          path: dist
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A version with a suffix (v1.0.0-rc1) is marked as a pre-release
+          prerelease=""
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then prerelease="--prerelease"; fi
+          gh release create "$GITHUB_REF_NAME" dist/*-all.jar \
+            --title "$GITHUB_REF_NAME" --notes-file .github/release-notes.md --verify-tag $prerelease

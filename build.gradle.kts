@@ -18,7 +18,8 @@ plugins {
 qupathExtension {
     name = "mantis-mrxsconvert"
     group = "com.embodiedspace"
-    version = "0.1.0-SNAPSHOT"
+    // Release builds (spec 10) pass -PreleaseVersion=<tag without the leading v>
+    version = providers.gradleProperty("releaseVersion").orElse("0.1.0-SNAPSHOT")
     description = "Converts fluorescence .mrxs slides to OME-TIFF with bioformats2raw and raw2ometiff"
     automaticModule = "com.embodiedspace.mantis.mrxsconvert"
 }
