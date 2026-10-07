@@ -12,7 +12,8 @@
     Drop the template's `groovy` plugin and Groovy deps (we write Java).
   - Gradle wrapper **9.4.0**. The template's wrapper has no `distributionSha256Sum`. Add it (E2: pinned + verified downloads).
   - JDK **25** (QuPath 0.7 jars are class version 69).
-- Build also fetches the pinned JRE (02) by URL + SHA-256, like the tools.
+- Build also fetches the pinned JRE (02) by URL + SHA-256, like the tools. *(Done with spec 02: pins and tasks are
+  listed there. The installable jar is built by the `extensionJar` task, not `shadowJar`.)*
 - Build pipeline: assemble payload (02) from pinned tool versions → extension jar.
   Tool distributions are fetched by the build from their pinned GitHub release URLs + checksums,
   **not** committed (`reference/` is local-only and git-ignored).

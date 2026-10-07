@@ -22,12 +22,15 @@ fluorescence channels incorrectly; the CLI output reads correctly. Users are non
 Spike 01 is done (`specs/01-findings.md`: go on QuPath 0.7). Specs 00, 02, 03, 06, 07, 09 and 10 have been revised
 to match. Versions are pinned: Temurin JRE 25 in the payload (02), and the QuPath template, plugin and
 Gradle versions (10). The dev JDK is Oracle 25.0.4.1 at `C:\Program Files\Java\jdk-25.0.4.1`; `JAVA_HOME` is not set,
-so set it for `gradlew`. The Gradle project is scaffolded (`SlideConvertExtension` adds a placeholder menu item; `gradlew build`
-passes). Next up: spec 02 (payload), then the order given in spec 00.
+so set it for `gradlew`. `SlideConvertExtension` adds a placeholder menu item. Spec 02 (payload) is done: the build downloads
+pinned tools + Temurin JRE 25.0.4.1+1 and builds the `-all` jar (266 MB); `payload.ToolPayload.ensureExtracted()` unpacks it.
+`gradlew build` passes. Next up: spec 03 (runner), then the order given in spec 00.
 
 ## Common mistakes to avoid
 - **Never run the tools in QuPath's JVM or put their jars on its classpath.** Bio-Formats 8.5 conflicts with
   QuPath's copy, and that conflict is what causes the bug (A4).
+- **Never add payload jars through Shadow** (`shadowJar.from(...)`): it unpacks them into our jar, onto QuPath's
+  classpath. The `extensionJar` task adds them as opaque resources (spec 02).
 - **Don't merge the two tools' classpaths.** raw2ometiff pins older bioformats2raw/zarr-java/blosc-java/picocli
   jars. Share only the 134 byte-identical jars (spec 02).
 - `reference/outputs` came from older tool versions (Bio-Formats 7.3.0): compare pixels + channel metadata, never bytes (09).

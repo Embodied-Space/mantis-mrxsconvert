@@ -1,0 +1,22 @@
+mantis-mrxsconvert tool payload: third-party notices
+=====================================================
+
+This folder is extracted by the mantis-mrxsconvert QuPath extension. It contains unmodified copies of
+the following software. The extension itself is licensed under GPL-3.0.
+
+bioformats2raw 0.12.1 (common/, b2r/)
+  Glencoe Software, Inc. Licensed under the GPL (version 2 text): see bioformats2raw-LICENSE.txt.
+  Source: https://github.com/glencoesoftware/bioformats2raw/tree/v0.12.1
+
+raw2ometiff 0.10.1 (common/, r2o/)
+  Glencoe Software, Inc. Licensed under the GPL (version 2 text): see raw2ometiff-LICENSE.txt.
+  Source: https://github.com/glencoesoftware/raw2ometiff/tree/v0.10.1
+
+  Both tools bundle their dependencies (Bio-Formats 8.5.0 and others) under their own licenses, as
+  distributed in the tools' release archives; many jars carry their license files under META-INF/.
+
+Eclipse Temurin JRE 25.0.4.1+1 (jre/)
+  Eclipse Adoptium. Licensed under GPL-2.0 with the Classpath Exception.
+  License texts and third-party notices: jre/legal/ (start with jre/legal/java.base/LICENSE and
+  jre/legal/java.base/ASSEMBLY_EXCEPTION).
+  Source: https://github.com/adoptium/jdk25u/tree/jdk-25.0.4.1+1_adopt

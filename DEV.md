@@ -11,8 +11,9 @@ converts files: it doesn't import them into QuPath projects, carry over annotati
 
 ## Status
 
-Spike 01 is done (`specs/01-findings.md`). The Gradle project is scaffolded: the extension registers itself and adds a
-placeholder menu item. Next is spec 02 (tool payload).
+Spike 01 is done (`specs/01-findings.md`). The extension registers itself and adds a placeholder menu item.
+Spec 02 (tool payload) is done: the build bundles the JRE and both tools, and `ToolPayload.ensureExtracted()` unpacks
+them. Next is spec 03 (conversion runner).
 
 ## Building
 
@@ -23,8 +24,14 @@ set JAVA_HOME=C:\Program Files\Java\jdk-25.0.4.1
 gradlew build
 ```
 
-The installable jar is `build\libs\mantis-mrxsconvert-<version>-all.jar`; `gradlew build` produces it (QuPath's own libraries are not bundled).
+The installable jar is `build\libs\mantis-mrxsconvert-<version>-all.jar` (~266 MB); `gradlew build` produces it (QuPath's own libraries are not bundled).
 The Gradle wrapper download is pinned by SHA-256 in `gradle/wrapper/gradle-wrapper.properties`.
+
+The first build downloads the pinned tools and JRE (~470 MB, SHA-256-checked) into `.gradle\payload-downloads\`,
+which survives `gradlew clean`. Pins (URL + SHA-256) are in `build.gradle.kts` and listed in spec 02. Build chain:
+`download*` → `assemblePayload` (`build\payload\`) → `shadowJar` (code only, `-code` jar) → `extensionJar` (`-all` jar).
+`gradlew test` builds the `-all` jar first: `ToolPayloadIntegrationTest` extracts the payload from it and runs
+the bundled `java.exe` and both tools.
 
 ## Repository layout
 
@@ -72,6 +79,11 @@ QuPath (JavaFX)            ── never loads the tool jars ──
 - **Main classes.** `com.glencoesoftware.bioformats2raw.Converter` and
   `com.glencoesoftware.pyramid.PyramidFromDirectoryWriter`.
 - **Native code.** The `blosc-java` jars include `libbloscjni.dll`, so nothing extra is needed on Windows.
+- **Payload.** The JRE and tool jars are plain resources under `qupath/ext/mantis/mrxsconvert/payload/` in the
+  `-all` jar, with a `manifest.json` (paths + SHA-256s). They are added by a plain `Jar` task, never by Shadow:
+  Shadow unpacks every `.jar` it is given and would put the tools' classes on QuPath's classpath.
+  At runtime they are extracted to `%LOCALAPPDATA%\mantis-mrxsconvert\tools\<id>\` (~385 MB). File locks
+  (`<id>.lock`, `<id>.inuse`) keep several QuPath instances safe; see spec 02.
 
 ## The manual process (what we automate)
 

@@ -10,6 +10,7 @@ nothing to install besides the extension.
 
 - Windows 10/11
 - QuPath 0.7.x
+- About 400 MB of disk space for the converter's tools, unpacked the first time you convert.
 - Free disk space: roughly **13× the size of each slide** while it converts. Most of that is temporary and
   is freed once the slide is done.
 
