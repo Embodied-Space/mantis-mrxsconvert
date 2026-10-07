@@ -13,7 +13,9 @@ converts files: it doesn't import them into QuPath projects, carry over annotati
 
 Spike 01 is done (`specs/01-findings.md`). The extension registers itself and adds a placeholder menu item.
 Spec 02 (tool payload) is done: the build bundles the JRE and both tools, and `ToolPayload.ensureExtracted()` unpacks
-them. Next is spec 03 (conversion runner).
+them. Spec 03 (conversion runner) is done: `ConversionRunner.convert(...)` converts one slide, with temp workspaces
+from spec 05 (`TempWorkspace`, orphan cleanup at startup) and the settings model + CLI mapping from spec 06
+(`ConversionSettings`; persistence still to do). Next is spec 07 (batch queue), which also needs 04 and the rest of 06.
 
 ## Building
 
@@ -31,7 +33,10 @@ The first build downloads the pinned tools and JRE (~470 MB, SHA-256-checked) in
 which survives `gradlew clean`. Pins (URL + SHA-256) are in `build.gradle.kts` and listed in spec 02. Build chain:
 `download*` → `assemblePayload` (`build\payload\`) → `shadowJar` (code only, `-code` jar) → `extensionJar` (`-all` jar).
 `gradlew test` builds the `-all` jar first: `ToolPayloadIntegrationTest` extracts the payload from it and runs
-the bundled `java.exe` and both tools.
+the bundled `java.exe` and both tools. `ConversionRunnerIntegrationTest` converts the `reference/` samples for real
+(success, step-1 failure, cancel in each step; ~1 min) and is skipped when `reference/` is missing. It keeps its
+extracted payload in `%TEMP%\mantis-mrxsconvert-test-tools\` between runs (not under `build\`: an IDE watching the
+folder can block the final rename of a fresh extraction).
 
 ## Repository layout
 
@@ -79,6 +84,12 @@ QuPath (JavaFX)            ── never loads the tool jars ──
 - **Main classes.** `com.glencoesoftware.bioformats2raw.Converter` and
   `com.glencoesoftware.pyramid.PyramidFromDirectoryWriter`.
 - **Native code.** The `blosc-java` jars include `libbloscjni.dll`, so nothing extra is needed on Windows.
+- **Runner.** Per slide: a temp workspace `%TEMP%\mantis-mrxsconvert\<uuid>\` (held by a lock on `owner.lock`, so
+  startup cleanup can tell live from leftover), step 1 → Zarr in the workspace, step 2 → `<output>.partial`, then a
+  non-replacing rename. A hidden `<output>.partial.lock` is held for the whole job; a `.partial` with a free lock is a
+  crash leftover and gets deleted. The child JVMs run with the workspace as working dir and a scrubbed environment. Each job
+  appends tool output, command lines and exit codes to its log file. Failure reasons are user-facing strings in
+  `strings.properties` (`runner.failed.*`).
 - **Payload.** The JRE and tool jars are plain resources under `qupath/ext/mantis/mrxsconvert/payload/` in the
   `-all` jar, with a `manifest.json` (paths + SHA-256s). They are added by a plain `Jar` task, never by Shadow:
   Shadow unpacks every `.jar` it is given and would put the tools' classes on QuPath's classpath.

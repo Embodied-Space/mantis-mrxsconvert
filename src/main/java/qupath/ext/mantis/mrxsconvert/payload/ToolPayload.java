@@ -17,6 +17,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HexFormat;
@@ -50,6 +51,7 @@ public final class ToolPayload {
 	private static final String STAGING_SUFFIX = ".extracting";
 	private static final String LOCK_SUFFIX = ".lock";
 	private static final String IN_USE_SUFFIX = ".inuse";
+	private static final Duration MOVE_RETRY = Duration.ofSeconds(60);
 	private static final Pattern PAYLOAD_DIR = Pattern.compile("[0-9a-f]{16}(" + Pattern.quote(STAGING_SUFFIX) + ")?");
 
 	/*
@@ -221,13 +223,15 @@ public final class ToolPayload {
 	}
 
 	private static void moveIntoPlace(Path staging, Path target) throws IOException {
-		for (int attempt = 1; ; attempt++) {
+		long deadline = System.nanoTime() + MOVE_RETRY.toNanos();
+		while (true) {
 			try {
 				Files.move(staging, target, StandardCopyOption.ATOMIC_MOVE);
 				return;
 			} catch (AccessDeniedException e) {
-				// Virus scanners briefly hold freshly written files open, which blocks renaming their dir
-				if (attempt == 20)
+				// Virus scanners hold freshly written files open while they scan them, which blocks renaming their dir.
+				// Scanning ~385 MB of new jars on a slow lab PC can take a while.
+				if (System.nanoTime() > deadline)
 					throw e;
 				try {
 					Thread.sleep(250);

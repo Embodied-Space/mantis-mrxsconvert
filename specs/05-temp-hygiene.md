@@ -1,6 +1,8 @@
 # 05 — Temp Hygiene
 
 **Depends on:** nothing. **Decisions:** C1, C2 (orphan cleanup), D6.
+**Status:** Done with spec 03 (2026-10-07). Code: `temp/TempWorkspace`; startup cleanup runs on a daemon thread from
+`SlideConvertExtension.installExtension`. Tests: `TempWorkspaceTest` (incl. a second JVM as "another QuPath", killed mid-run).
 
 ## Purpose
 
@@ -20,6 +22,10 @@ int           TempWorkspace.cleanupOrphans(); // called once at extension startu
 - Each workspace contains `owner.lock` holding `{pid, processStartTime}` and is held with an exclusive `FileLock` for its lifetime.
 - **Orphan rule:** a workspace is an orphan iff its lock can be acquired (owner dead) **or** `owner.lock` is missing and dir mtime > 24 h.
   PID alone is not trusted (PID reuse); the OS file lock is the authority.
+- The owner writes `owner.lock`'s contents only after locking it. An unlocked but **empty** `owner.lock` means the owner is
+  between creating and locking it, so it gets the same 24 h rule as a missing one.
+- Workspaces open in this JVM are tracked in memory (a JVM can't `tryLock` its own lock).
+- An orphan's contents are deleted while holding its lock, then the lock file and dir.
 - Deletion retries a few times with backoff (Windows AV / indexer handles); failures are logged, never thrown to UI.
 
 ## Out of scope

@@ -44,7 +44,7 @@ QuPath, for single files, multiple files, or whole directories.
 |----|----------|
 | C1 | Intermediate Zarr goes in **system temp**; always deleted (success, failure, cancel). |
 | C2 | Pre-flight free-space check per file; orphaned temp dirs cleaned at QuPath startup. |
-| C3 | Acceptance: with default settings, output is pixel- and channel-metadata-equal to the user's known-good CLI outputs, on the user's fluorescence samples. |
+| C3 | Acceptance: with default settings, output is pixel- and channel-metadata-equal to the user's known-good CLI outputs, on the user's fluorescence samples. The OME-XML `Pixels BigEndian` attribute is ignored (reference `true`, pinned tools `false`; no effect on uint8). *(Clarified 2026-10-07, user.)* |
 
 ### D. Inferred defaults (approved)
 | ID | Decision |
@@ -53,7 +53,7 @@ QuPath, for single files, multiple files, or whole directories.
 | D2 | Individually picked files under an override folder land flat; any two jobs resolving to the same output path block Start until resolved. |
 | D3 | Insufficient space → that file fails, batch continues. Requirement (revised 2026-10-07 from `reference/` data): 7.5× input on temp volume + 5.5× on output volume (13× if same volume), plus 1 GiB headroom each. Details in spec 07. |
 | D4 | Cancel kills running child process trees, deletes partial outputs + temp, marks queued as cancelled, keeps completed outputs. |
-| D5 | Output written as `<name>.ome.tiff.partial`, then renamed on success. |
+| D5 | Output written as `<name>.ome.tiff.partial`, then renamed on success. While converting, the job holds an exclusive lock on a hidden `<name>.ome.tiff.partial.lock`; a `.partial` whose lock is free is a crash leftover and is deleted automatically, one whose lock is held fails that job as "being written by another conversion". *(Added 2026-10-07, user.)* |
 | D6 | Temp dirs carry an owner marker (PID + lock) so startup cleanup never deletes another live QuPath's temp. |
 | D7 | Any `.mrxs` is converted (brightfield too); no content-type check. |
 | D8 | `.mrxs` missing its companion data folder fails fast with a clear message, before any work. |

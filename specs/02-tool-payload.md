@@ -30,6 +30,8 @@ one `java.exe` plus two runnable classpaths.
 - **Runtime:** `ToolPayload.ensureExtracted() -> ToolPaths`
   - Target: `%LOCALAPPDATA%\mantis-mrxsconvert\tools\<payload-hash>\`.
   - Extract to a sibling temp dir, verify SHA-256s, atomic rename into place. Concurrent QuPath instances must not corrupt it.
+    The rename retries for up to **60 s** while access is denied (virus scanners and file watchers hold fresh files
+    open; a 5 s window was seen to fail with VS Code watching the folder). *(Extended 2026-10-07, user.)*
   - If target exists and a `.complete` marker is present, reuse without re-hashing.
   - Old `<payload-hash>` dirs may be deleted when not in use (best-effort).
 - `ToolPaths` exposes: `javaExe` (`jre\bin\java.exe`), `classpathB2R` (`common\*;b2r\*`), `classpathR2O` (`common\*;r2o\*`), `logbackConfigB2R`, `logbackConfigR2O`.

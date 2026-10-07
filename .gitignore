@@ -17,6 +17,7 @@ out/
 *.ome.tiff
 *.ome.tif
 *.ome.tiff.partial
+*.ome.tiff.partial.lock
 *.zarr/
 
 # OS junk
