@@ -1,0 +1,29 @@
+# Local test material: CLI tools, sample scans, reference outputs (~2.2 GB). Build downloads tools (spec 10, E2).
+/reference/
+
+# Gradle / Java build output
+.gradle/
+build/
+out/
+*.class
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+
+# Conversion artifacts produced while testing
+*.ome.tiff
+*.ome.tif
+*.ome.tiff.partial
+*.zarr/
+
+# OS junk
+.DS_Store
+._*
+__MACOSX/
+Thumbs.db
+desktop.ini
+
+# Claude Code local settings
+.claude/settings.local.json
