@@ -255,6 +255,8 @@ tasks.test {
     // ToolPayloadIntegrationTest extracts the payload from the real -all jar and runs the JRE + both tools
     dependsOn(extensionJar)
     systemProperty("mrxsconvert.extensionJar", extensionJar.get().archiveFile.get().asFile.absolutePath)
+    // As QuPath's launcher does; MachineLimits reads the RAM size through FFM
+    jvmArgs("--enable-native-access=ALL-UNNAMED")
 }
 
 // The -all jar is the one users install, so `gradlew build` must produce it

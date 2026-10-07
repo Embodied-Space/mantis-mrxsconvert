@@ -1,6 +1,11 @@
 # 04 — Input Planning
 
 **Depends on:** nothing (pure logic + filesystem reads). **Decisions:** B2, B3, B4, D2, D7, D8.
+**Status:** Done (2026-10-07). Code: `plan/InputPlanner` (+ `Selection`, `Plan`, `PlannedJob`). Tests: `InputPlannerTest`.
+Details settled in code (no ledger change): a slide reached by several selections takes its output from the **first**
+one; a data folder without `Slidedat.ini` is INVALID too; a picked file that is missing or not `.mrxs` is INVALID; a
+selected folder that no longer exists is a blocking problem; unreadable sub-folders are logged and skipped; an
+INVALID job has no output and can't clash. Messages are `plan.*` in `strings.properties`.
 
 ## Purpose
 

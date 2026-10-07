@@ -1,6 +1,15 @@
 # 07 — Batch Queue
 
 **Depends on:** 03, 04, 05, 06. **Decisions:** B4, B6, B7, C2, D3, D4.
+**Status:** Done (2026-10-07). Code: `batch/BatchQueue` (`start(plan, settings, listener)` → `BatchHandle`),
+`DiskSpaceGuard` (rule 3 constants live here), `ZarrSize`, `JobState`, `BatchReport`. Tests: `BatchQueueTest`,
+`DiskSpaceGuardTest`, `ZarrSizeTest` (fakes), `BatchQueueIntegrationTest` (real tools on `reference/`).
+Details settled in code: the runner gained a `StepGate` hook, called between step 1 and step 2, for the uncompressed
+re-check. That re-check counts whole tiles (an upper bound: APOL1 1.43 GB vs 1.37 GB measured), and if the Zarr can't be
+read, the 80× pre-flight stands. Every failed job has a log, so spec 08's *Show log* always works. When the runner never ran (invalid slide, pre-flight
+refusal with its figures, tools not extracted, unexpected error), `FailureLog` writes a short one. Logs are
+`%LOCALAPPDATA%\mantis-mrxsconvert\logs\<batch time>_<NN>_<slide>.log`. Queued jobs become CANCELLED as soon as
+Cancel is pressed. `BatchQueue.heapWarning(...)` is public so the UI can show rule 8 before Start.
 
 ## Purpose
 

@@ -24,9 +24,9 @@ to match. Versions are pinned: Temurin JRE 25 in the payload (02), and the QuPat
 Gradle versions (10). The dev JDK is Oracle 25.0.4.1 at `C:\Program Files\Java\jdk-25.0.4.1`; `JAVA_HOME` is not set,
 so set it for `gradlew`. `SlideConvertExtension` adds a placeholder menu item. Spec 02 (payload) is done: the build downloads
 pinned tools + Temurin JRE 25.0.4.1+1 and builds the `-all` jar (266 MB); `payload.ToolPayload.ensureExtracted()` unpacks it.
-Spec 03 (runner) is done, with spec 05 (temp workspace) and 06's settings model + CLI mapping (06 persistence still open).
-`gradlew build` passes; `ConversionRunnerIntegrationTest` runs real conversions from `reference/` (~1 min).
-Next up: spec 07 (batch queue, needs 04 and the rest of 06), then the order given in spec 00.
+Specs 03 (runner), 04 (planning), 05 (temp), 06 (settings + persistence) and 07 (batch queue) are done.
+`gradlew build` passes; `ConversionRunnerIntegrationTest` and `BatchQueueIntegrationTest` run real conversions from
+`reference/` (~2 min). Next up: spec 08 (UI), then 09 and 10.
 
 ## Common mistakes to avoid
 - **Never run the tools in QuPath's JVM or put their jars on its classpath.** Bio-Formats 8.5 conflicts with

@@ -66,6 +66,12 @@ public final class ConversionRunner {
 	/** Never throws for a failed conversion; the result says what happened. */
 	public ConversionResult convert(ConversionJob job, ConversionSettings settings, ToolPaths tools,
 	                                ProgressListener progress, CancellationToken cancel) {
+		return convert(job, settings, tools, progress, cancel, StepGate.NONE);
+	}
+
+	/** As above, with {@code gate} consulted between the two steps. */
+	public ConversionResult convert(ConversionJob job, ConversionSettings settings, ToolPaths tools,
+	                                ProgressListener progress, CancellationToken cancel, StepGate gate) {
 		long start = System.nanoTime();
 		JobLog log;
 		try {
@@ -80,7 +86,7 @@ public final class ConversionRunner {
 			log.note("Settings " + settings);
 			ConversionResult result;
 			try {
-				run(job, settings, tools, progress, cancel, log);
+				run(job, settings, tools, progress, cancel, gate, log);
 				result = result(Status.SUCCEEDED, null, start, job);
 			} catch (Failure f) {
 				result = result(Status.FAILED, f.getMessage(), start, job);
@@ -98,7 +104,7 @@ public final class ConversionRunner {
 	}
 
 	private void run(ConversionJob job, ConversionSettings settings, ToolPaths tools, ProgressListener progress,
-	                 CancellationToken cancel, JobLog log) throws Failure, Cancelled, IOException {
+	                 CancellationToken cancel, StepGate gate, JobLog log) throws Failure, Cancelled, IOException {
 		Path partial = job.partialOutput();
 		// Fail fast; the rename re-checks the output (B4)
 		if (Files.exists(job.output()))
@@ -124,7 +130,7 @@ public final class ConversionRunner {
 				throw new Failure(message("runner.failed.workspace", e.getMessage()));
 			}
 			try {
-				runSteps(job, settings, tools, workspace.dir(), progress, cancel, log);
+				runSteps(job, settings, tools, workspace.dir(), progress, cancel, gate, log);
 			} finally {
 				workspace.close();
 				// Still under the output lock, so any .partial is this run's
@@ -137,12 +143,17 @@ public final class ConversionRunner {
 	}
 
 	private static void runSteps(ConversionJob job, ConversionSettings settings, ToolPaths tools, Path workspace,
-	                             ProgressListener progress, CancellationToken cancel, JobLog log)
+	                             ProgressListener progress, CancellationToken cancel, StepGate gate, JobLog log)
 			throws Failure, Cancelled, IOException {
 		log.note("Workspace " + workspace);
 		progress.update(Phase.EXTRACTING, 0);
 		runTool(bioformats2rawCommand(job, settings, tools, workspace), workspace, log, cancel, "runner.failed.extract");
 		checkCancelled(cancel);
+		String refusal = gate.beforeWriting(workspace.resolve(ZARR_DIR));
+		if (refusal != null) {
+			log.note("Not writing the OME-TIFF: " + refusal);
+			throw new Failure(refusal);
+		}
 
 		progress.update(Phase.WRITING, 0.5);
 		runTool(raw2ometiffCommand(job, settings, tools, workspace), workspace, log, cancel, "runner.failed.write");

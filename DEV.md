@@ -14,8 +14,9 @@ converts files: it doesn't import them into QuPath projects, carry over annotati
 Spike 01 is done (`specs/01-findings.md`). The extension registers itself and adds a placeholder menu item.
 Spec 02 (tool payload) is done: the build bundles the JRE and both tools, and `ToolPayload.ensureExtracted()` unpacks
 them. Spec 03 (conversion runner) is done: `ConversionRunner.convert(...)` converts one slide, with temp workspaces
-from spec 05 (`TempWorkspace`, orphan cleanup at startup) and the settings model + CLI mapping from spec 06
-(`ConversionSettings`; persistence still to do). Next is spec 07 (batch queue), which also needs 04 and the rest of 06.
+from spec 05 (`TempWorkspace`, orphan cleanup at startup). Spec 04 (`InputPlanner.plan(...)`), spec 06
+(`ConversionSettings`, `SettingsStore`, `MachineLimits`) and spec 07 (`BatchQueue.start(...)`) are done, so
+everything below the UI works. Next is spec 08 (UI).
 
 ## Building
 
@@ -90,6 +91,13 @@ QuPath (JavaFX)            ── never loads the tool jars ──
   crash leftover and gets deleted. The child JVMs run with the workspace as working dir and a scrubbed environment. Each job
   appends tool output, command lines and exit codes to its log file. Failure reasons are user-facing strings in
   `strings.properties` (`runner.failed.*`).
+- **Planning → batch.** `InputPlanner` turns selections into a `Plan` (READY / SKIP_EXISTS / INVALID + blocking
+  clashes). `BatchQueue` runs the READY jobs on `parallelFiles` daemon threads. Before each one, `DiskSpaceGuard`
+  reserves the spec 07 factors × input size on the temp and output volumes, minus what running jobs hold. For
+  Uncompressed output, a `StepGate` re-checks the exact size from the Zarr (`ZarrSize`) before step 2. `BatchHandle`
+  gives per-job `JobState`, `cancel()` and a `BatchReport` future. A `BatchListener` hears about changes on batch
+  threads, so the UI must hop to the FX thread. Settings persist through `SettingsStore` (QuPath preferences,
+  `mantisSlideconvert.*`).
 - **Payload.** The JRE and tool jars are plain resources under `qupath/ext/mantis/mrxsconvert/payload/` in the
   `-all` jar, with a `manifest.json` (paths + SHA-256s). They are added by a plain `Jar` task, never by Shadow:
   Shadow unpacks every `.jar` it is given and would put the tools' classes on QuPath's classpath.

@@ -1,8 +1,12 @@
 # 06 — Settings
 
 **Depends on:** nothing (persistence API confirmed in 01 Q2). **Decisions:** B6, D1.
-**Status:** Model + CLI mapping done with spec 03 (2026-10-07): `settings/ConversionSettings` (null = Auto/CLI default),
-`settings/Compression`, `ConversionSettingsTest`. **Persistence and machine-dependent limits (cores, RAM) still to do.**
+**Status:** Done (2026-10-07). Model + CLI mapping: `settings/ConversionSettings` (null = Auto/CLI default),
+`settings/Compression`. Persistence: `settings/SettingsStore` (one `PathPrefs.createPersistentPreference` string per
+key, "" = not stored; `PathPrefs.getUserPreferences()` is deprecated in 0.7). Limits: `settings/MachineLimits` (cores;
+RAM via `com.sun.management` when present, else Windows `GlobalMemoryStatusEx` through FFM, because QuPath's runtime
+lacks `jdk.management`; QuPath already enables native access). Tests: `ConversionSettingsTest`, `SettingsStoreTest`.
+Restart persistence inside real QuPath is checked manually in spec 08.
 
 ## Purpose
 

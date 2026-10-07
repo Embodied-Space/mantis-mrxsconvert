@@ -2,6 +2,7 @@ package qupath.ext.mantis.mrxsconvert.payload;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import qupath.ext.mantis.mrxsconvert.AppDirs;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,11 +87,7 @@ public final class ToolPayload {
 
 	/** {@code %LOCALAPPDATA%\mantis-mrxsconvert\tools} (E4). */
 	static Path defaultToolsDir() {
-		String localAppData = System.getenv("LOCALAPPDATA");
-		Path base = localAppData == null || localAppData.isBlank()
-				? Path.of(System.getProperty("user.home"), "AppData", "Local")
-				: Path.of(localAppData);
-		return base.resolve("mantis-mrxsconvert").resolve("tools");
+		return AppDirs.root().resolve("tools");
 	}
 
 	ToolPaths extract() throws IOException {
