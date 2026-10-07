@@ -62,7 +62,7 @@ keeps "QuPath's own Java, child process" (the intent of A4) with no extra downlo
   `META-INF/services` entries. So spec 02's "payload as resources inside the extension jar" is safe.
 - **Loose jars in subfolders of the extensions dir *are* picked up.** The extension manager uses a
   `RecursiveDirectoryWatcher` with a `MAX_SEARCH_DEPTH`. So the payload must **never** be extracted under the
-  QuPath extensions/user dir. `%LOCALAPPDATA%\mantis-slideconvert\` (E4) is correct.
+  QuPath extensions/user dir. `%LOCALAPPDATA%\mantis-mrxsconvert\` (E4) is correct.
 
 ### Q5 — Tools on QuPath's runtime
 Both tools ran to completion via the launcher on both samples, with the `--add-opens` option for bioformats2raw.

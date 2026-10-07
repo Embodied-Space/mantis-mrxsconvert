@@ -26,7 +26,7 @@ one `java.exe` plus two runnable classpaths.
   Must include at least the modules spike 01 proved sufficient: `java.se`, `jdk.unsupported`, `jdk.zipfs`.
 - Payload stored as resources inside the extension jar (not as loose jars QuPath could load — see 01 Q4).
 - **Runtime:** `ToolPayload.ensureExtracted() -> ToolPaths`
-  - Target: `%LOCALAPPDATA%\mantis-slideconvert\tools\<payload-hash>\`.
+  - Target: `%LOCALAPPDATA%\mantis-mrxsconvert\tools\<payload-hash>\`.
   - Extract to a sibling temp dir, verify SHA-256s, atomic rename into place. Concurrent QuPath instances must not corrupt it.
   - If target exists and a `.complete` marker is present, reuse without re-hashing.
   - Old `<payload-hash>` dirs may be deleted when not in use (best-effort).

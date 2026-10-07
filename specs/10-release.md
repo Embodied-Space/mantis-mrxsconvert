@@ -20,7 +20,7 @@
 - License: GPL-3.0 `LICENSE`; payload `LICENSES/` includes bioformats2raw / raw2ometiff licenses, the JRE's (GPLv2 + CE) + third-party notices;
   release notes link to the tools' source.
 - User README: install (drag jar onto QuPath), supported QuPath version, Windows-only, what it does/doesn't do,
-  where logs and cache live, how to uninstall (delete jar + `%LOCALAPPDATA%\mantis-slideconvert`).
+  where logs and cache live, how to uninstall (delete jar + `%LOCALAPPDATA%\mantis-mrxsconvert`).
 
 ## Out of scope
 

@@ -1,10 +1,12 @@
-# mantis_slideconvert
+# mantis_mrxsconvert
 
 QuPath extension (Windows, GPL-3.0) that converts fluorescence `.mrxs` slides to `.ome.tiff` by running
 bioformats2raw 0.12.1 → raw2ometiff 0.10.1 as child JVMs on a JRE bundled in the extension (QuPath 0.7 has no `java.exe`). QuPath reads `.mrxs`
 fluorescence channels incorrectly; the CLI output reads correctly. Users are non-technical: GUI only.
 
 ## Folder structure
+- `build.gradle.kts`, `settings.gradle.kts`, `gradle/`, `gradlew*` — Gradle build (spec 10 pins).
+- `src/main/java/qupath/ext/mantis/mrxsconvert/` — extension code; strings in `src/main/resources/…/strings.properties`.
 - `README.md` — end-user intro (keep brief, no dev detail). `DEV.md` — human developer reference; keep in sync.
 - `specs/` — source of truth. `00-goal-and-decisions.md` holds the confirmed decision ledger (IDs A1–E6);
   `01`–`10` are small specs, one component each, with acceptance criteria.
@@ -18,9 +20,10 @@ fluorescence channels incorrectly; the CLI output reads correctly. Users are non
 
 ## Current status
 Spike 01 is done (`specs/01-findings.md`: go on QuPath 0.7). Specs 00, 02, 03, 06, 07, 09 and 10 have been revised
-to match. Nothing is built yet. Versions are pinned: Temurin JRE 25 in the payload (02), and the QuPath template, plugin and
+to match. Versions are pinned: Temurin JRE 25 in the payload (02), and the QuPath template, plugin and
 Gradle versions (10). The dev JDK is Oracle 25.0.4.1 at `C:\Program Files\Java\jdk-25.0.4.1`; `JAVA_HOME` is not set,
-so set it for `gradlew`. Next up: scaffold the Gradle project, then build in the order given in spec 00.
+so set it for `gradlew`. The Gradle project is scaffolded (`SlideConvertExtension` adds a placeholder menu item; `gradlew build`
+passes). Next up: spec 02 (payload), then the order given in spec 00.
 
 ## Common mistakes to avoid
 - **Never run the tools in QuPath's JVM or put their jars on its classpath.** Bio-Formats 8.5 conflicts with

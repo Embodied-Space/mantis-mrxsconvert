@@ -11,9 +11,20 @@ converts files: it doesn't import them into QuPath projects, carry over annotati
 
 ## Status
 
-**Nothing is built yet.** The design is in `specs/`. The next task is **spec 01, a spike** that checks
-assumptions about QuPath 0.7. It's a gate: specs 02–10 don't start until its findings are written up in
-`specs/01-findings.md`.
+Spike 01 is done (`specs/01-findings.md`). The Gradle project is scaffolded: the extension registers itself and adds a
+placeholder menu item. Next is spec 02 (tool payload).
+
+## Building
+
+Needs JDK 25. `JAVA_HOME` must point at it:
+
+```bat
+set JAVA_HOME=C:\Program Files\Java\jdk-25.0.4.1
+gradlew build
+```
+
+The installable jar is `build\libs\mantis-mrxsconvert-<version>-all.jar`; `gradlew build` produces it (QuPath's own libraries are not bundled).
+The Gradle wrapper download is pinned by SHA-256 in `gradle/wrapper/gradle-wrapper.properties`.
 
 ## Repository layout
 
@@ -21,13 +32,15 @@ assumptions about QuPath 0.7. It's a gate: specs 02–10 don't start until its f
 README.md      end-user intro
 DEV.md         this file
 CLAUDE.md      instructions for Claude Code (short version of this file)
+build.gradle.kts, settings.gradle.kts, gradle/, gradlew*   Gradle build (versions pinned in spec 10)
+src/main/java/qupath/ext/mantis/mrxsconvert/              extension code
 specs/         design: 00 = goal + decision ledger, 01–10 = one component each
 reference/     local-only, git-ignored (~2.2 GB) — see "Test data"
 ```
 
 ## How specs work
 
-- `specs/00-goal-and-decisions.md` is the **source of truth**. Every decision has an ID (A1–E5), and each
+- `specs/00-goal-and-decisions.md` is the **source of truth**. Every decision has an ID (A1–E6), and each
   was explicitly confirmed by the project owner.
 - Each spec covers one component and lists its scope, what's out of scope, its interface and its acceptance
   criteria. Keep them small.
@@ -45,7 +58,7 @@ QuPath (JavaFX)            ── never loads the tool jars ──
        ├─ 08 UI ─► 07 Batch queue ─► 03 Runner ─┬─► child JVM: bioformats2raw  (.mrxs → Zarr in %TEMP%)
        │            ▲   ▲   ▲                    └─► child JVM: raw2ometiff     (Zarr → .ome.tiff.partial → rename)
        │      04 Planning  05 Temp  06 Settings
-       └─ 02 Payload: JRE + tool jars nested in the extension jar → extracted to %LOCALAPPDATA%\mantis-slideconvert\tools\<hash>\
+       └─ 02 Payload: JRE + tool jars nested in the extension jar → extracted to %LOCALAPPDATA%\mantis-mrxsconvert\tools\<hash>\
 ```
 
 - **Child processes, not in-process.** QuPath ships its own Bio-Formats. Loading 8.5.0 next to it causes

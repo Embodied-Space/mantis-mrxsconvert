@@ -57,7 +57,7 @@ QuPath, for single files, multiple files, or whole directories.
 | D6 | Temp dirs carry an owner marker (PID + lock) so startup cleanup never deletes another live QuPath's temp. |
 | D7 | Any `.mrxs` is converted (brightfield too); no content-type check. |
 | D8 | `.mrxs` missing its companion data folder fails fast with a clear message, before any work. |
-| D9 | One log file per conversion, stored in the extension's cache folder (`%LOCALAPPDATA%\mantis-slideconvert\logs\`). |
+| D9 | One log file per conversion, stored in the extension's cache folder (`%LOCALAPPDATA%\mantis-mrxsconvert\logs\`). |
 
 ### E. Decided during spec writing (confirmed)
 | ID | Decision |
@@ -65,7 +65,7 @@ QuPath, for single files, multiple files, or whole directories.
 | E1 | Override + folder selection mirrors the tree **including** the selected folder's name: `<override>\<Selected>\sub\x.ome.tiff`. |
 | E2 | Build downloads pinned tool releases (SHA-256 verified); `reference/` is local-only and git-ignored. |
 | E3 | Default heap per child JVM = **JVM default** (no `-Xmx`; 25 % of physical RAM). Spike 01 measured live heap ≈ 210 MB (b2r) / 70 MB (r2o); floor 128 MB / 48 MB. *(Decided 2026-10-07.)* |
-| E4 | Extracted tools + logs live in `%LOCALAPPDATA%\mantis-slideconvert\`. |
+| E4 | Extracted tools + logs live in `%LOCALAPPDATA%\mantis-mrxsconvert\`. *(Renamed from `mantis-slideconvert` 2026-10-07 by the user.)* |
 | E5 | Discovery ignores macOS artifacts: `._*` AppleDouble files, `.DS_Store`, `__MACOSX/` folders. Never shown, never counted. |
 | E6 | Output compression choices: LZW (default), JPEG, Uncompressed. JPEG-2000 / JPEG-2000 Lossy are excluded (spike 01: they silently write uncompressed TIFFs); zlib is not a raw2ometiff option. *(Decided 2026-10-07.)* |
 

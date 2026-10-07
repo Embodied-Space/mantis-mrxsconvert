@@ -9,14 +9,14 @@ Create, own, and reliably remove intermediate Zarr workspaces in system temp —
 ## Interface (sketch)
 
 ```java
-TempWorkspace TempWorkspace.create();     // %TEMP%\mantis-slideconvert\<uuid>\
+TempWorkspace TempWorkspace.create();     // %TEMP%\mantis-mrxsconvert\<uuid>\
 void          TempWorkspace.close();      // recursive delete, retries for Windows file locks
 int           TempWorkspace.cleanupOrphans(); // called once at extension startup, off the FX thread
 ```
 
 ## Design
 
-- Root: `%TEMP%\mantis-slideconvert\`.
+- Root: `%TEMP%\mantis-mrxsconvert\`.
 - Each workspace contains `owner.lock` holding `{pid, processStartTime}` and is held with an exclusive `FileLock` for its lifetime.
 - **Orphan rule:** a workspace is an orphan iff its lock can be acquired (owner dead) **or** `owner.lock` is missing and dir mtime > 24 h.
   PID alone is not trusted (PID reuse); the OS file lock is the authority.
